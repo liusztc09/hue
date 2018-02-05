@@ -89,7 +89,17 @@ include $(DESKTOP_ROOT)/devtools.mk
 # END DEV ONLY >>>>
 
 .PHONY: syncdb
-syncdb: $(DESKTOP_DB)
+syncdb: $(DESKTOP_SYNCDB)
+
+$(DESKTOP_SYNCDB): $(BLD_DIR_BIN)/hue
+	@echo "--- Regenerating database at $@"
+	@if [ -n "$(DESKTOP_DEBUG)" ]; then \
+	  echo 'Removing old database (DESKTOP_DEBUG is set)' ; \
+	  rm -f $@ ; \
+	fi
+	@echo "--- Syncing/updating database at $@"
+	@$(ENV_PYTHON) $(BLD_DIR_BIN)/hue makemigrations --noinput
+	@$(ENV_PYTHON) $(BLD_DIR_BIN)/hue migrate
 
 $(DESKTOP_DB): $(BLD_DIR_BIN)/hue
 	@echo "--- Regenerating database at $@"
@@ -97,9 +107,6 @@ $(DESKTOP_DB): $(BLD_DIR_BIN)/hue
 	  echo 'Removing old database (DESKTOP_DEBUG is set)' ; \
 	  rm -f $@ ; \
 	fi
-	#@echo "--- Syncing/updating database at $@"
-	#@$(ENV_PYTHON) $(BLD_DIR_BIN)/hue makemigrations --noinput
-	#@$(ENV_PYTHON) $(BLD_DIR_BIN)/hue migrate
 
 # Targets that simply recurse into all of the applications
 ENV_INSTALL_TARGETS := $(APPS:%=.recursive-env-install/%)
