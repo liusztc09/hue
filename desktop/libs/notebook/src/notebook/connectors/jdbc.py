@@ -83,7 +83,12 @@ class JdbcApi(Api):
       raise AuthenticationRequired()
 
     return props
-
+  
+  def close_session(self, session):
+    global API_CACHE
+    self.db = None
+    API_CACHE.pop(self.cache_key, None)
+  
   @query_error_handler
   def execute(self, notebook, snippet):
     if self.db is None:
